@@ -16,6 +16,8 @@ class YoloDetector(object):
         self.net_detector = NetDetector(self.input_data, net_weight, self.device)
         self.output_image = None
 
+
+
     def set_device(self, device):
         self.device = device
 
@@ -32,36 +34,49 @@ class PlayerDetector(object):
         ) if self.detect_players else None
 
     def get_AB_player_position(self):
-        player1 = self.result_player[0][0]
-        player2 = self.result_player[0][1]
+        try:
+            player1 = self.result_player[0][0]
+            player2 = self.result_player[0][1]
+        except:
+            print('Our model only detect 1 player...')
+            return [None, None]
+
         class_id = player1.boxes.cls.item()
-        xyxy_1 = list(player1.boxes.xyxy.numpy()[0])
-        xyxy_2 = list(player2.boxes.xyxy.numpy()[0])
+        xyxy_1 = list(player1.boxes.xyxy.cpu().numpy()[0])
+        xyxy_2 = list(player2.boxes.xyxy.cpu().numpy()[0])
         xyxy_1 = [int(i) for i in xyxy_1]
         xyxy_2 = [int(i) for i in xyxy_2]
-        result = [xyxy_1, xyxy_2] if class_id == 0 else [xyxy_2, xyxy_1]
+        result = [xyxy_1, xyxy_2] if class_id == 1 else [xyxy_2, xyxy_1]
         return result  # [A, B] (far person, close person)
 
     def get_AB_player_image(self):  # return cv images
         xyxy_A, xyxy_B = self.get_AB_player_position()
+        if xyxy_A is None or xyxy_B is None: return [None, None]
+
         img_player_A = self.image[xyxy_A[1]:xyxy_A[3], xyxy_A[0]:xyxy_A[2], :]
         img_player_B = self.image[xyxy_B[1]:xyxy_B[3], xyxy_B[0]:xyxy_B[2], :]
-        return img_player_A, img_player_B
+
+        return [img_player_A, img_player_B]
 
     def save_player_image(self, save_path='.'):
         players_image = self.image.copy()
         os.makedirs(save_path, exist_ok=True)
         xyxy_A, xyxy_B = self.get_AB_player_position()
-        cv2.rectangle(players_image, (xyxy_A[0], xyxy_A[1]), (xyxy_A[2], xyxy_A[3]), (0, 0, 255), 3)
-        cv2.rectangle(players_image, (xyxy_B[0], xyxy_B[1]), (xyxy_B[2], xyxy_B[3]), (0, 0, 255), 3)
-        cv2.imwrite(os.path.join(save_path, f'players.png'), players_image)
+        try:
+            cv2.rectangle(players_image, (xyxy_A[0], xyxy_A[1]), (xyxy_A[2], xyxy_A[3]), (0, 0, 255), 3)
+            cv2.rectangle(players_image, (xyxy_B[0], xyxy_B[1]), (xyxy_B[2], xyxy_B[3]), (0, 0, 255), 3)
+            cv2.imwrite(os.path.join(save_path, f'players.png'), players_image)
+        except:
+            print('Our model only detect 1 player...')
 
     def save_crop_player_image(self, save_path='.'):
         os.makedirs(save_path, exist_ok=True)
         crop_A, crop_B = self.get_AB_player_image()
-        cv2.imwrite(os.path.join(save_path, f'crop_player_A.png'), crop_A)
-        cv2.imwrite(os.path.join(save_path, f'crop_player_B.png'), crop_B)
-
+        try:
+            cv2.imwrite(os.path.join(save_path, f'crop_player_A.png'), crop_A)
+            cv2.imwrite(os.path.join(save_path, f'crop_player_B.png'), crop_B)
+        except:
+            print('Our model only detect 1 player...')
 
 class CourtDetector(object):
     def __init__(self, image_cv, weight, device):
@@ -72,7 +87,7 @@ class CourtDetector(object):
         ) if self.detect_court else None
 
     def get_court_region(self):
-        court_region = self.result_court[0][0].masks.xy[0]
+        court_region = self.result_court[0][0].masks.xy[0].cpu()
         court_region = [[int(i[0]), int(i[1])] for i in court_region]
         return court_region
 
@@ -96,7 +111,7 @@ class NetDetector(object):
 
     def get_net_box(self):
         net_box = self.result_net[0][0]
-        xyxy_net = list(net_box.boxes.xyxy.numpy()[0])
+        xyxy_net = list(net_box.boxes.xyxy.cpu().numpy()[0])
         xyxy_net = [int(i) for i in xyxy_net]
         return xyxy_net
 
