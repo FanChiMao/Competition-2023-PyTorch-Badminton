@@ -8,7 +8,7 @@
 
 [![report](https://img.shields.io/badge/Supplementary-Report-yellow)]() 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() 
-![Visitor Count](https://img.shields.io/badge/dynamic/json?color=blue&label=Visitors&query=value&url=https%3A%2F%2Fapi.countapi.xyz%2Fhit%2FCompetition-2023-Pytorch-Badminton%2Freadme)
+![Visitor Count](https://visitor-badge.glitch.me/badge?page_id=Competition-2023-PyTorch-Badminton)
 
 ## Demo result  
 
