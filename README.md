@@ -7,8 +7,7 @@
 <a href="https://aidea-web.tw/topic/cbea66cc-a993-4be8-933d-1aa9779001f8"><img src="https://i.imgur.com/rwfx1h8.png" title="source: top image" /></a>  
 
 [![report](https://img.shields.io/badge/Supplementary-Report-yellow)]() 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]()  
-
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() 
 ![Visitor Count](https://img.shields.io/badge/dynamic/json?color=blue&label=Visitors&query=value&url=https%3A%2F%2Fapi.countapi.xyz%2Fhit%2FCompetition-2023-Pytorch-Badminton%2Freadme)
 
 ## Demo result  
