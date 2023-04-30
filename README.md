@@ -29,6 +29,8 @@
 - Download the TrackNetv2
     ```
     git clone https://nol.cs.nctu.edu.tw:234/open-source/TrackNetv2
+
+    python utils\predict_process\TrackNet_import.py
     ```
 
 ## Dataset  

@@ -7,6 +7,7 @@ Pillow
 piexif
 scikit-learn
 keras
+tensorflow-gpu=1.13
 ultralytics
 tqdm
 labelme
