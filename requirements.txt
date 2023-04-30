@@ -1,0 +1,12 @@
+pyqt5
+pandas
+PyMySQL
+opencv-python
+imutils
+Pillow
+piexif
+scikit-learn
+keras
+ultralytics
+tqdm
+labelme
