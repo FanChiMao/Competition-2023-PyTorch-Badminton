@@ -87,7 +87,7 @@ class CourtDetector(object):
         ) if self.detect_court else None
 
     def get_court_region(self):
-        court_region = self.result_court[0][0].masks.xy[0].cpu()
+        court_region = self.result_court[0][0].masks.xy[0]
         court_region = [[int(i[0]), int(i[1])] for i in court_region]
         return court_region
 
@@ -123,7 +123,7 @@ class NetDetector(object):
         cv2.imwrite(os.path.join(save_path, f'net.png'), net_image)
 
 if __name__ == "__main__":
-    test_img = r'D:\AICUP\Badminton\dataset\Public\small_test\video_0673_frame_000031.png'
+    test_img = r'D:\AICUP\Competition-2023-PyTorch-Badminton\datasets\gt_frames\video_0000_frame_000038.png'
     player = '../../trained_weights/yolov8s_players_detection.pt'
     court = '../../trained_weights/yolov8s-seg_court_detection.pt'
     net = '../../trained_weights/yolov8s-seg_net_detection.pt'

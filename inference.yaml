@@ -1,0 +1,11 @@
+# Path setting
+PATH:
+  VIDEO: D:\AICUP\Competition-2023-PyTorch-Badminton\datasets\Public\public_test_data
+  RESULT: ./predict_result
+
+# Pretrained weights path
+WEIGHTS:
+  PLAYER: D:\AICUP\Competition-2023-PyTorch-Badminton\trained_weights\yolov8s-seg_court_detection.pt
+  COURT: D:\AICUP\Competition-2023-PyTorch-Badminton\trained_weights\yolov8s-seg_net_detection.pt
+  NET: D:\AICUP\Competition-2023-PyTorch-Badminton\trained_weights\yolov8s_players_detection.pt
+
