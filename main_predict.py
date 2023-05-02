@@ -4,8 +4,6 @@ import os
 from tqdm import tqdm
 import cv2
 
-
-
 def load_setting(yaml_path):
     with open(yaml_path, 'r') as config:
         opt = yaml.safe_load(config)
