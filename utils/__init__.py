@@ -15,7 +15,7 @@ import cv2
 import PIL.Image
 
 from sklearn.model_selection import train_test_split
-from labelme import utils
+
 
 
 class Labelme2YOLO(object):

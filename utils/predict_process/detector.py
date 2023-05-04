@@ -7,8 +7,8 @@ import cv2
 
 
 class YoloDetector(object):
-    def __init__(self, img_path=None, players_weight=None, court_weight=None, net_weight=None):
-        self.input_data = cv2.imread(img_path)
+    def __init__(self, img=None, players_weight=None, court_weight=None, net_weight=None):
+        self.input_data = cv2.imread(img)
         #self.input_data = image # cv2 image
         self.device = 'cpu'
         self.player_detector = PlayerDetector(self.input_data, players_weight, self.device)
@@ -16,6 +16,13 @@ class YoloDetector(object):
         self.net_detector = NetDetector(self.input_data, net_weight, self.device)
         self.output_image = None
 
+
+    def get_hitter_image(self, player):
+        A, B = self.player_detector.get_AB_player_image
+        if player == 'A':
+            return A
+        elif player == 'B':
+            return B
 
 
     def set_device(self, device):
@@ -129,7 +136,7 @@ if __name__ == "__main__":
     net = '../../trained_weights/yolov8s-seg_net_detection.pt'
 
     #### Total ####
-    V8Detector = YoloDetector(img_path=test_img, players_weight=player, court_weight=court, net_weight=net)
+    V8Detector = YoloDetector(img=test_img, players_weight=player, court_weight=court, net_weight=net)
     V8Detector.set_device('0')
     V8Detector.save_output_images()
 

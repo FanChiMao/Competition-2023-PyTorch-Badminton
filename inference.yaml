@@ -1,6 +1,6 @@
 # Path setting
 PATH:
-  VIDEO: D:\AICUP\Competition-2023-PyTorch-Badminton\datasets\Public\public_test_data
+  VIDEO: D:\AICUP\datasets\Public\public_test_data
   RESULT: ./predict_result
 
 # Pretrained weights path
