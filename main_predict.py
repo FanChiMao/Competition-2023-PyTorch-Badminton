@@ -1,5 +1,5 @@
 import yaml
-from glob import glob
+import glob
 import os
 from tqdm import tqdm
 import cv2
@@ -19,7 +19,7 @@ class BadmintonAI(object):
 
         for folder in self.test_video:
             folder_path = os.path.join(self.path_config['VIDEO'], folder)
-            mp4_files = glob(os.path.join(folder_path, '*.mp4'))
+            mp4_files = glob.glob(os.path.join(folder_path, '*.mp4'))
             self.video_path_list.append(mp4_files)
 
     def get_key_frame_index(self, video_path):
@@ -60,8 +60,10 @@ class BadmintonAI(object):
 
 
     def run_inference(self):
-        for i, video in enumerate(tqdm(self.video_path_list)):
-            VideoName = os.path.basename(video)
+        for i, video in enumerate(self.video_path_list):
+            print("==========================================")
+            VideoName = os.path.basename(video[0])
+            print(f"Start inference {VideoName}")
             frame_indexes, cv_images = self.get_key_frame_index(video)
 
             self.predict_each_image(VideoName, frame_indexes, cv_images)

@@ -1,7 +1,7 @@
 # Path setting
 PATH:
   VIDEO: D:\AICUP\datasets\Public\public_test_data
-  RESULT: ./predict_result
+  RESULT: .\predict_result
 
 # Pretrained weights path
 WEIGHTS:
