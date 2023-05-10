@@ -30,7 +30,7 @@ class BadmintonAI(object):
         return frame_index, image_opencv
 
     def predict_each_image(self, video_name, frame_indexes, cv_image_list):
-        print(f"==> Predict {len(cv_image_list)} images from video_{video_name}")
+        print(f"==> Predict {len(cv_image_list)} frames from video_{video_name}")
         for ShotSeq, cv_image in enumerate(cv_image_list):
             V8Detector = YoloDetector(img=cv_image,
                          players_weight=self.weight_config['PLAYER'],

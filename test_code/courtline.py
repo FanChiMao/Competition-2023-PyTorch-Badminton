@@ -6,34 +6,27 @@ from numpy.linalg import lstsq
 """
 revise from: https://ramanlabs.in/static/tutorial/detecting_player_position_during_a_badminton_rally.html
 """
-LT_2D = [86, 78]
-RT_2D = [532, 78]
-LM_2D = [86, 562]
-RM_2D = [532, 562]
-LB_2D = [86, 1046]
-RB_2D = [532, 1046]
-dst_coords = np.hstack((LT_2D, RT_2D, LM_2D, RM_2D, LB_2D, RB_2D)).reshape(6,2).astype("float32")
 
-LT = [427, 384]
-RT = [861, 384]
-LM = [379, 486]
-RM = [908, 486]
-LB = [286, 670]
-RB = [1001, 670]
+img = cv2.imread(r"D:\AICUP\Competition-2023-PyTorch-Badminton\test_code\court_sr_clean.png")
+TOP_LEFT_2D = [124, 81]
+TOP_RIGHT_2D = [493, 81]
+MIDDLE_LEFT_2D = [89, 562]
+MIDDLE_RIGHT_2D = [529, 562]
+BOTTOM_LEFT_2D = [124, 1043]
+BOTTOM_RIGHT_2D = [493, 1043]
+NET_LEFT_2D = [89, 562]
+NET_RIGHT_2D = [529, 562]
+dst_coords = np.hstack((TOP_LEFT_2D, MIDDLE_LEFT_2D, BOTTOM_LEFT_2D, TOP_RIGHT_2D, MIDDLE_RIGHT_2D, BOTTOM_RIGHT_2D, NET_LEFT_2D, NET_RIGHT_2D)).reshape(8,2).astype("float32")
 
-src_coords = np.hstack((LT, RT, LM, RM, LB, RB)).reshape(6, 2)
-src_coords_final = np.hstack((src_coords, np.ones((src_coords.shape[0], 1)))).astype("float32")
-
-def display_point():
-    frame = cv2.imread(r"D:\AICUP\Badminton\dataset\Public\train_frames\v_0000_frame_000001.png")
-    for (x, y) in src_coords:
-        cv2.circle(frame, (int(x), int(y)), radius=5, color=(0, 0, 255), thickness=-1)
-
-    plt.figure(figsize=(10, 10))
-    plt.imshow(frame[:, :, ::-1])
-    plt.show()
-
-
+color = (255, 0, 0)
+radius = 5
+cv2.circle(img, MIDDLE_LEFT_2D, radius, color, -1)
+cv2.circle(img, MIDDLE_RIGHT_2D, radius, color, -1)
+cv2.circle(img, BOTTOM_LEFT_2D, radius, color, -1)
+cv2.circle(img, BOTTOM_RIGHT_2D, radius, color, -1)
+cv2.circle(img, TOP_LEFT_2D, radius, color, -1)
+cv2.circle(img, TOP_RIGHT_2D, radius, color, -1)
+cv2.imwrite("./test.png", img)
 
 def get_coordinates(event, x, y, flags, params):
     if event == cv2.EVENT_LBUTTONDOWN:
@@ -41,8 +34,8 @@ def get_coordinates(event, x, y, flags, params):
 
 
 def find_court_corner():
-    # image = cv2.imread(r"D:\AICUP\Badminton\court_sr_clean.png")
-    image = cv2.imread(r"D:\AICUP\Badminton\dataset\Public\train_frames\v_0000_frame_000001.png")
+    image = cv2.imread(r"D:\AICUP\Competition-2023-PyTorch-Badminton\test_code\court_sr_clean.png")
+    # image = cv2.imread(r"D:\AICUP\datasets\gt_frames\video_0000_frame_000038.png")
     cv2.namedWindow('image')
     cv2.setMouseCallback('image', get_coordinates)
     cv2.imshow('image', image)
@@ -50,12 +43,5 @@ def find_court_corner():
     cv2.destroyAllWindows()
 
 
-def mapping_transformation():
-    M_transform = lstsq(src_coords_final[:3, :], dst_coords[:3, :], rcond=-1)[0]
-    print(M_transform)
-
-
 if __name__ == '__main__':
-    # find_court_corner()
-    # display_point()
-    mapping_transformation()
+    find_court_corner()

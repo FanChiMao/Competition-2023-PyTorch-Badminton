@@ -4,7 +4,7 @@ import glob
 import numpy as np
 from tqdm import tqdm
 import cv2
-
+from scipy.spatial import ConvexHull
 
 class YoloDetector(object):
     def __init__(self, img=None, players_weight=None, court_weight=None, net_weight=None):
@@ -98,6 +98,23 @@ class CourtDetector(object):
         court_region = [[int(i[0]), int(i[1])] for i in court_region]
         return court_region
 
+    def _angle(self, point):
+        return np.arctan2(point[1], point[0])
+    def get_court_corner(self):
+        polygon = np.array(self.get_court_region())
+        hull = ConvexHull(polygon)
+        vertices = polygon[hull.vertices]
+
+
+        angles = [self._angle(vertex - vertices.mean(axis=0)) for vertex in vertices]
+
+        sorted_vertices = vertices[np.argsort(angles)]
+        top_left = sorted_vertices[0]
+        top_right = sorted_vertices[1]
+        bottom_right = sorted_vertices[2]
+        bottom_left = sorted_vertices[3]
+        return top_left, top_right, bottom_right, bottom_left
+
     def save_court_image(self, save_path='.'):
         court_image = self.image.copy()
         os.makedirs(save_path, exist_ok=True)
@@ -129,11 +146,33 @@ class NetDetector(object):
         cv2.rectangle(net_image, (xyxy_net[0], xyxy_net[1]), (xyxy_net[2], xyxy_net[3]), (0, 255, 0), 3)
         cv2.imwrite(os.path.join(save_path, f'net.png'), net_image)
 
+# def get_homography_matrix(TL, ML, BL, TR, MR, BR):
+#     from test_code.courtline import dst_coords
+#     from numpy.linalg import lstsq
+#     src_coords = np.hstack((TL, ML, BL, TR, MR, BR)).reshape(6, 2)
+#     src_coords_final = np.hstack((src_coords, np.ones((src_coords.shape[0], 1)))).astype("float32")
+#     M_transform = lstsq(src_coords_final[:3, :], dst_coords[:3, :], rcond=-1)[0]
+#     return M_transform
+
+def get_homography_matrix(ML, MR, Net_L, Net_R):
+    from numpy.linalg import lstsq
+    dst_coords = np.hstack((ML, MR)).reshape(2, 2)
+    src_coords = np.hstack((Net_L, Net_R)).reshape(2, 2)
+    src_coords_final = np.hstack((src_coords, np.ones((src_coords.shape[0], 1)))).astype("float32")
+    M_transform = lstsq(src_coords_final[:2, :], dst_coords[:2, :], rcond=-1)[0]
+    return M_transform
+
+def mapping(src_coords, transform):
+    tar_coords = np.matmul(np.array([[src_coords[0], src_coords[1], 1]]).astype("float32"), transform)
+    return tar_coords
+
 if __name__ == "__main__":
-    test_img = r'D:\AICUP\Competition-2023-PyTorch-Badminton\datasets\gt_frames\video_0000_frame_000038.png'
-    player = '../../trained_weights/yolov8s_players_detection.pt'
+    test_img = r'D:\AICUP\datasets\gt_frames\video_0000_frame_000038.png'
+    player = '../../trained_weights/yolov8s_players_detection_2.pt'
     court = '../../trained_weights/yolov8s-seg_court_detection.pt'
     net = '../../trained_weights/yolov8s-seg_net_detection.pt'
+
+    img = cv2.imread(test_img)
 
     #### Total ####
     V8Detector = YoloDetector(img=test_img, players_weight=player, court_weight=court, net_weight=net)
@@ -141,15 +180,50 @@ if __name__ == "__main__":
     V8Detector.save_output_images()
 
     #### Player detection ####
-    xyxy_A, xyxy_B = V8Detector.player_detector.get_AB_player_position()
-    img_A, img_B = V8Detector.player_detector.get_AB_player_image()
-    V8Detector.player_detector.save_player_image(save_path='./players')
-    V8Detector.player_detector.save_crop_player_image(save_path='./players_crop')
+    # xyxy_A, xyxy_B = V8Detector.player_detector.get_AB_player_position()
+    # img_A, img_B = V8Detector.player_detector.get_AB_player_image()
+    # V8Detector.player_detector.save_player_image(save_path='./players')
+    # V8Detector.player_detector.save_crop_player_image(save_path='./players_crop')
 
     #### Court detection ####
     region_point = V8Detector.court_detector.get_court_region()
-    V8Detector.court_detector.save_court_image(save_path='./court')
+    min_x = min([point[0] for point in region_point])
+    max_x = max([point[0] for point in region_point])
+    min_y = min([point[1] for point in region_point])
+    max_y = max([point[1] for point in region_point])
 
-    #### Court detection ####
+    top_x = []
+    for point in region_point:
+        if point[1] == min_y:
+            top_x.append(point[0])
+
+    TL = [min(top_x), min_y]
+    TR = [max(top_x), min_y]
+
+    BL = [min_x, max_y]
+    BR = [max_x, max_y]
+
+    #### Net detection ####
     xyxy_net = V8Detector.net_detector.get_net_box()
-    V8Detector.net_detector.save_net_image(save_path='./net')
+    ML, MR = [xyxy_net[0], xyxy_net[3]], [xyxy_net[2], xyxy_net[3]]
+    Net_L, Net_R = [xyxy_net[0], xyxy_net[1]], [xyxy_net[2], xyxy_net[1]]
+    #### Homography transformation ####
+    # color = (0, 255, 0)
+    # radius = 5
+    # cv2.circle(img, BL, radius, color, -1)
+    # cv2.circle(img, BR, radius, color, -1)
+    # cv2.circle(img, ML, radius, color, -1)
+    # cv2.circle(img, MR, radius, color, -1)
+    # cv2.circle(img, TL, radius, color, -1)
+    # cv2.circle(img, TR, radius, color, -1)
+    # cv2.circle(img, Net_L, radius, color, -1)
+    # cv2.circle(img, Net_R, radius, color, -1)
+    # cv2.imwrite("corners.png", img)
+
+    # homography = get_homography_matrix(TL, ML, BL, TR, MR, BR)
+    homography = get_homography_matrix(ML, MR, Net_L, Net_R)
+    tar_coords = mapping(src_coords=[746,201], transform=homography)
+    x_t = tar_coords[0, 0]
+    y_t = tar_coords[0, 1]
+    print(tar_coords)
+

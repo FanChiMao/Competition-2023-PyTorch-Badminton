@@ -19,7 +19,7 @@ import os
 """
 
 csv_header = r"VideoName,ShotSeq,HitFrame,Hitter,BallHeight,RoundHead,Backhand,LandingX,LandingY," \
-             r"HitterLocationX,HitterLocationY,DefenderLocationX,DefenderLocationY,BallType,Winner\n"
+             r"HitterLocationX,HitterLocationY,DefenderLocationX,DefenderLocationY,BallType,Winner"
 
 
 def write_result_csv(save_path, result):
@@ -34,4 +34,4 @@ def write_result_csv(save_path, result):
 
 
 if __name__ == "__main__":
-    pass
+    write_result_csv('./test', '')
