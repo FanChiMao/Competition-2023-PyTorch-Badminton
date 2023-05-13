@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import os
+import csv
 """
  0: VideoName
  1: ShotSeq
@@ -24,7 +25,7 @@ csv_header = r"VideoName,ShotSeq,HitFrame,Hitter,BallHeight,RoundHead,Backhand,L
 
 def write_result_csv(save_path, result):
     os.makedirs(save_path, exist_ok=True)
-    path = os.path.join(save_path, 'predict_csv.csv')
+    path = os.path.join(save_path, 'result.csv')
     print(f"==> Start to write csv to {path}")
     with open(path, 'w+') as f:
         f.write(csv_header)

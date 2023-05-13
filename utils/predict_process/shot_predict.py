@@ -50,7 +50,7 @@ def get_angle(line1, line2):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--csv_folder', type=str, default=r"./predict_train_csv",
+    parser.add_argument('--csv_folder', type=str, default=r"./predict_public_train_csv",
                         help='The path includes predict csv files by TrackNet.')
     args = parser.parse_args()
 

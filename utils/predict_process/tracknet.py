@@ -38,7 +38,7 @@ def custom_loss(y_true, y_pred):
 
 
 class TrackDetector(object):
-    def __init__(self, track_weight=None, csv_path='./predict_csv'):
+    def __init__(self, track_weight=None, csv_path='./predict_public_test_csv'):
         self.track_detector = load_model(track_weight, custom_objects={'custom_loss':custom_loss}) if track_weight else None
         self.save_path = csv_path
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     OPT, P, W = load_setting('../../inference.yaml')
 
     TrackNet = TrackDetector(track_weight=r"../../trained_weights/tracknetv2_track_detection",
-                             csv_path='./predict_csv')
+                             csv_path='predict_public_test_csv')
 
     ## Predict hit frame by
     for i, folder in enumerate(tqdm(os.listdir(P['VIDEO']))):

@@ -7,26 +7,30 @@ import cv2
 from scipy.spatial import ConvexHull
 
 class YoloDetector(object):
-    def __init__(self, img=None, players_weight=None, court_weight=None, net_weight=None):
-        self.input_data = cv2.imread(img)
-        #self.input_data = image # cv2 image
+    def __init__(self, players_weight=None, court_weight=None, net_weight=None):
+        self.input_data = None
         self.device = 'cpu'
-        self.player_detector = PlayerDetector(self.input_data, players_weight, self.device)
-        self.court_detector = CourtDetector(self.input_data, court_weight, self.device)
-        self.net_detector = NetDetector(self.input_data, net_weight, self.device)
-        self.output_image = None
+        self.weights = [players_weight, court_weight, net_weight]
+        self.player_detector = None
+        self.court_detector = None
+        self.net_detector = None
 
+    def set_image(self, cv_image=None, device='cpu'):
+        self.input_data = cv_image
+        self.set_device(device)
+        self.player_detector = PlayerDetector(cv_image, self.weights[0], self.device)
+        self.court_detector = CourtDetector(cv_image, self.weights[1], self.device)
+        self.net_detector = NetDetector(cv_image, self.weights[2], self.device)
+
+    def set_device(self, device):
+        self.device = device
 
     def get_hitter_image(self, player):
-        A, B = self.player_detector.get_AB_player_image
+        A, B = self.player_detector.get_AB_player_image()
         if player == 'A':
             return A
         elif player == 'B':
             return B
-
-
-    def set_device(self, device):
-        self.device = device
 
     def save_output_images(self):
         cv2.imwrite("./result.png", self.input_data)
@@ -37,7 +41,7 @@ class PlayerDetector(object):
         self.image = image_cv
         self.detect_players = YOLO(weight) if weight else None
         self.result_player = self.detect_players.predict(source=self.image,
-            save=False, imgsz=640, max_det=2, device=device
+            save=False, imgsz=640, max_det=2, device=device, verbose=False
         ) if self.detect_players else None
 
     def get_AB_player_position(self):
@@ -90,30 +94,13 @@ class CourtDetector(object):
         self.image = image_cv
         self.detect_court = YOLO(weight) if weight else None
         self.result_court = self.detect_court.predict(source=self.image,
-            save=False, imgsz=640, max_det=1, device=device
+            save=False, imgsz=640, max_det=1, device=device, verbose=False
         ) if self.detect_court else None
 
     def get_court_region(self):
         court_region = self.result_court[0][0].masks.xy[0]
         court_region = [[int(i[0]), int(i[1])] for i in court_region]
         return court_region
-
-    def _angle(self, point):
-        return np.arctan2(point[1], point[0])
-    def get_court_corner(self):
-        polygon = np.array(self.get_court_region())
-        hull = ConvexHull(polygon)
-        vertices = polygon[hull.vertices]
-
-
-        angles = [self._angle(vertex - vertices.mean(axis=0)) for vertex in vertices]
-
-        sorted_vertices = vertices[np.argsort(angles)]
-        top_left = sorted_vertices[0]
-        top_right = sorted_vertices[1]
-        bottom_right = sorted_vertices[2]
-        bottom_left = sorted_vertices[3]
-        return top_left, top_right, bottom_right, bottom_left
 
     def save_court_image(self, save_path='.'):
         court_image = self.image.copy()
@@ -130,7 +117,7 @@ class NetDetector(object):
         self.image = image_cv
         self.detect_net = YOLO(weight) if weight else None
         self.result_net = self.detect_net.predict(source=self.image,
-            save=False, imgsz=640, max_det=1, boxes=True, device=device
+            save=False, imgsz=640, max_det=1, boxes=True, device=device, verbose=False
         ) if self.detect_net else None
 
     def get_net_box(self):
@@ -146,21 +133,21 @@ class NetDetector(object):
         cv2.rectangle(net_image, (xyxy_net[0], xyxy_net[1]), (xyxy_net[2], xyxy_net[3]), (0, 255, 0), 3)
         cv2.imwrite(os.path.join(save_path, f'net.png'), net_image)
 
-# def get_homography_matrix(TL, ML, BL, TR, MR, BR):
-#     from test_code.courtline import dst_coords
-#     from numpy.linalg import lstsq
-#     src_coords = np.hstack((TL, ML, BL, TR, MR, BR)).reshape(6, 2)
-#     src_coords_final = np.hstack((src_coords, np.ones((src_coords.shape[0], 1)))).astype("float32")
-#     M_transform = lstsq(src_coords_final[:3, :], dst_coords[:3, :], rcond=-1)[0]
-#     return M_transform
-
-def get_homography_matrix(ML, MR, Net_L, Net_R):
+def get_homography_matrix(TL, TR, ML, MR, BL, BR):
+    from test_code.courtline import dst_coords
     from numpy.linalg import lstsq
-    dst_coords = np.hstack((ML, MR)).reshape(2, 2)
-    src_coords = np.hstack((Net_L, Net_R)).reshape(2, 2)
+    src_coords = np.hstack((TL, TR, ML, MR, BL, BR)).reshape(6, 2)
     src_coords_final = np.hstack((src_coords, np.ones((src_coords.shape[0], 1)))).astype("float32")
-    M_transform = lstsq(src_coords_final[:2, :], dst_coords[:2, :], rcond=-1)[0]
+    M_transform = lstsq(src_coords_final[:, :], dst_coords[:, :], rcond=-1)[0]
     return M_transform
+
+# def get_homography_matrix(ML, MR, Net_L, Net_R):
+#     from numpy.linalg import lstsq
+#     dst_coords = np.hstack((ML, MR)).reshape(2, 2)
+#     src_coords = np.hstack((Net_L, Net_R)).reshape(2, 2)
+#     src_coords_final = np.hstack((src_coords, np.ones((src_coords.shape[0], 1)))).astype("float32")
+#     M_transform = lstsq(src_coords_final[:2, :], dst_coords[:2, :], rcond=-1)[0]
+#     return M_transform
 
 def mapping(src_coords, transform):
     tar_coords = np.matmul(np.array([[src_coords[0], src_coords[1], 1]]).astype("float32"), transform)
@@ -203,27 +190,64 @@ if __name__ == "__main__":
     BL = [min_x, max_y]
     BR = [max_x, max_y]
 
+    print(TL)
+    print(TR)
+    print(BL)
+    print(BR)
     #### Net detection ####
     xyxy_net = V8Detector.net_detector.get_net_box()
     ML, MR = [xyxy_net[0], xyxy_net[3]], [xyxy_net[2], xyxy_net[3]]
     Net_L, Net_R = [xyxy_net[0], xyxy_net[1]], [xyxy_net[2], xyxy_net[1]]
+
+
     #### Homography transformation ####
     # color = (0, 255, 0)
     # radius = 5
     # cv2.circle(img, BL, radius, color, -1)
     # cv2.circle(img, BR, radius, color, -1)
-    # cv2.circle(img, ML, radius, color, -1)
-    # cv2.circle(img, MR, radius, color, -1)
+    # #cv2.circle(img, ML, radius, color, -1)
+    # #cv2.circle(img, MR, radius, color, -1)
     # cv2.circle(img, TL, radius, color, -1)
     # cv2.circle(img, TR, radius, color, -1)
-    # cv2.circle(img, Net_L, radius, color, -1)
-    # cv2.circle(img, Net_R, radius, color, -1)
+    # # cv2.circle(img, Net_L, radius, color, -1)
+    # # cv2.circle(img, Net_R, radius, color, -1)
     # cv2.imwrite("corners.png", img)
 
-    # homography = get_homography_matrix(TL, ML, BL, TR, MR, BR)
-    homography = get_homography_matrix(ML, MR, Net_L, Net_R)
-    tar_coords = mapping(src_coords=[746,201], transform=homography)
-    x_t = tar_coords[0, 0]
-    y_t = tar_coords[0, 1]
-    print(tar_coords)
+    # homography = get_homography_matrix(TL, TR, ML, MR, BL, BR)
+    # tar_coords = mapping(src_coords=[746,201], transform=homography)
+    # x_t = tar_coords[0, 0]
+    # y_t = tar_coords[0, 1]
+    # print(tar_coords)
 
+    # TOP_LEFT_2D = [42, 0]
+    # TOP_RIGHT_2D = [568, 0]
+    # MIDDLE_LEFT_2D = [0, 670]
+    # MIDDLE_RIGHT_2D = [610, 670]
+    # BOTTOM_LEFT_2D = [42, 1340]
+    # BOTTOM_RIGHT_2D = [568, 1340]
+    #
+    # dst = np.array([BOTTOM_RIGHT_2D, BOTTOM_LEFT_2D, MIDDLE_RIGHT_2D, MIDDLE_LEFT_2D], np.float32)
+    # src = np.array([BR, BL, MR, ML], np.float32)
+
+    img_pts = np.float32([TL, TR, BL, BR])
+    offset = 0
+    # The coordinates of the four corners of the badminton court in the world
+    world_pts = np.float32([[0 + offset, 0 + offset],
+                            [544 + offset, 0 + offset],
+                            [0 + offset, 1340 + offset],
+                            [544 + offset, 1340 + offset]])
+
+    # Compute the homography matrix
+    H, _ = cv2.findHomography(img_pts, world_pts)
+
+    # The coordinate of the shuttlecock in the image
+    # Replace this with the actual coordinate from your image
+    shuttlecock_img_pt = np.array([791,361, 1])
+
+    # Use the homography matrix to transform the shuttlecock's image point to a world point
+    shuttlecock_world_pt = np.dot(H, shuttlecock_img_pt)
+
+    # Normalize the world point
+    shuttlecock_world_pt /= shuttlecock_world_pt[2]
+
+    print(shuttlecock_world_pt)
