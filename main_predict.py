@@ -60,7 +60,7 @@ class BadmintonAI(object):
 
         return frame_index, image_opencv, ball_location
 
-    def predict_each_image(self, video_name, frame_indexes, cv_image_list, ball_location, last):
+    def predict_each_image(self, video_name, frame_indexes, cv_image_list, ball_location):
         print(f"==> Predict {len(cv_image_list)} frame from video_{video_name}")
 
         for ShotSeq, cv_image in enumerate(tqdm(cv_image_list)):
@@ -84,7 +84,7 @@ class BadmintonAI(object):
             ball_height = 2 # or 1
 
             # TODO: judge WINNER
-            winner = 'X' if not last else 'A' # or 'B'
+            winner = 'X' if ShotSeq != len(cv_image_list) - 1 else 'A' # or 'B'
 
             HitterLocationX = 640
             HitterLocationY = 360
@@ -100,14 +100,13 @@ class BadmintonAI(object):
 
     def run_inference(self):
         for i, video in enumerate(self.video_path_list):
-            last = True if i == len(self.video_path_list)-1 else False
             print("==========================================")
             VideoName = os.path.basename(video[0])
             print(f"Start inference {VideoName}")
             # frame_indexes, cv_images = self.get_hit_frame_index(video)
             frame_indexes, cv_images, ball_xy = self.get_hit_frame_index_by_csv(video, self.path_config['HIT_CSV'])
 
-            self.predict_each_image(VideoName, frame_indexes, cv_images, ball_xy, last)
+            self.predict_each_image(VideoName, frame_indexes, cv_images, ball_xy)
 
     def write_result(self):
         write_result_csv(self.result_path, self.predict_result)
@@ -116,15 +115,10 @@ if __name__ == "__main__":
     ## Load yaml configuration file
     with open('inference.yaml', 'r') as config:
         opt = yaml.safe_load(config)
-
     badminton_core = BadmintonAI(opt)
     badminton_core.run_inference()
-
-
     badminton_core.write_result()
 
-
-    pass
 
 
 

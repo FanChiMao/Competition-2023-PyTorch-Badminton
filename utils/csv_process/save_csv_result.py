@@ -19,19 +19,19 @@ import csv
 14 :Winner
 """
 
-csv_header = r"VideoName,ShotSeq,HitFrame,Hitter,BallHeight,RoundHead,Backhand,LandingX,LandingY," \
-             r"HitterLocationX,HitterLocationY,DefenderLocationX,DefenderLocationY,BallType,Winner"
+csv_header = ["VideoName","ShotSeq","HitFrame","Hitter","BallHeight","RoundHead","Backhand","LandingX","LandingY",
+              "HitterLocationX","HitterLocationY","DefenderLocationX","DefenderLocationY","BallType","Winner"]
 
 
 def write_result_csv(save_path, result):
     os.makedirs(save_path, exist_ok=True)
     path = os.path.join(save_path, 'result.csv')
     print(f"==> Start to write csv to {path}")
-    with open(path, 'w+') as f:
-        f.write(csv_header)
+    with open(path, 'w', newline='') as csvfile1:
+        h = csv.writer(csvfile1)
+        h.writerow(csv_header)
         for i, line in enumerate(tqdm(result)):
-            f.write(line)
-
+            h.writerow(line)
 
 
 if __name__ == "__main__":
