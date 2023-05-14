@@ -58,5 +58,5 @@
 
 
 ## Contact us  
-- Chi-Mao Fan (leader): qaz5517359@gmail.com  
+- Chi-Mao Fan: qaz5517359@gmail.com  
 `TODO`
