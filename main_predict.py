@@ -1,5 +1,5 @@
 import yaml
-from tqdm import tqdm
+import math
 from utils.predict_process.classifier import *
 from utils.predict_process.detector import *
 from utils.csv_process.save_csv_result import write_result_csv
@@ -16,9 +16,9 @@ class BadmintonAI(object):
         self.detector = YoloDetector(self.weight_config['PLAYER'],
                                      self.weight_config['COURT'],
                                      self.weight_config['NET'])
-        self.classifier = YoloClassifier(self.weight_config['ROUNDHEAD'],
-                                         self.weight_config['BACKHAND'],
-                                         self.weight_config['BALLTYPE'])
+        self.classifier = YoloClassifier(self.weight_config['ROUNDHEAD'], self.weight_config['BACKHAND'],
+                                         self.weight_config['BALLTYPE'],
+                                         self.weight_config['START'], self.weight_config['AFTER'])
         self.predict_result = []
 
         for folder in self.test_video:
@@ -27,11 +27,11 @@ class BadmintonAI(object):
             self.video_path_list.append(mp4_files)
 
     @staticmethod
-    def get_hit_frame_index(video_path):
-        print("==> Get the hitting frame")
-        frame_index = []
-        image_opencv = []
-        return frame_index, image_opencv
+    def _get_distance(point_1, point_2):
+        x1, y1 = point_1
+        x2, y2 = point_2
+        distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+        return distance
 
     @staticmethod
     def get_hit_frame_index_by_csv(video_path, csv_path):
@@ -66,8 +66,11 @@ class BadmintonAI(object):
         for ShotSeq, cv_image in enumerate(tqdm(cv_image_list)):
             self.detector.set_image(cv_image, 'cpu')
 
-            # TODO: Judge A or B player by the location of ball.
-            hitter = 'A' # or 'B'
+            xy_ball = ball_location[ShotSeq]
+            xy_A, xy_B = self.detector.player_detector.get_AB_player_position(center_point=True)
+            dist_A, dist_B = self._get_distance(xy_A, xy_ball), self._get_distance(xy_B, xy_ball)
+
+            hitter = 'A' if dist_A < dist_B else 'B'
             hitter_image = self.detector.get_hitter_image(hitter)
 
 
@@ -75,15 +78,10 @@ class BadmintonAI(object):
             self.classifier.set_image(hitter_image, 'cpu')
             RH_class = self.classifier.get_RH()
             BH_class = self.classifier.get_BH()
-            ball_type = self.classifier.get_ball_type()
+            ball_type = self.classifier.get_ball_type(separate=True, start=True if ShotSeq == 0 else False)
 
-            # TODO: get ball location
-            ball_x, ball_y = ball_location[ShotSeq]
-
-            # TODO: judge ball height
             ball_height = 2 # or 1
 
-            # TODO: judge WINNER
             winner = 'X' if ShotSeq != len(cv_image_list) - 1 else 'A' # or 'B'
 
             HitterLocationX = 640
@@ -92,8 +90,8 @@ class BadmintonAI(object):
             DefenderLocationY = 360
 
             result = [video_name, str(ShotSeq + 1), frame_indexes[ShotSeq], hitter, RH_class, BH_class, ball_height,
-                      ball_x, ball_y, HitterLocationX, HitterLocationY, DefenderLocationX, DefenderLocationY, ball_type,
-                      winner]
+                      xy_ball[0], xy_ball[1], HitterLocationX, HitterLocationY, DefenderLocationX, DefenderLocationY,
+                      ball_type, winner]
 
             self.predict_result.append(result)
 
@@ -103,7 +101,6 @@ class BadmintonAI(object):
             print("==========================================")
             VideoName = os.path.basename(video[0])
             print(f"Start inference {VideoName}")
-            # frame_indexes, cv_images = self.get_hit_frame_index(video)
             frame_indexes, cv_images, ball_xy = self.get_hit_frame_index_by_csv(video, self.path_config['HIT_CSV'])
 
             self.predict_each_image(VideoName, frame_indexes, cv_images, ball_xy)

@@ -1,6 +1,5 @@
 from ultralytics import YOLO
 import os
-import glob
 import numpy as np
 from tqdm import tqdm
 import cv2
@@ -44,7 +43,7 @@ class PlayerDetector(object):
             save=False, imgsz=640, max_det=2, device=device, verbose=False
         ) if self.detect_players else None
 
-    def get_AB_player_position(self):
+    def get_AB_player_position(self, center_point=False):
         try:
             player1 = self.result_player[0][0]
             player2 = self.result_player[0][1]
@@ -57,8 +56,15 @@ class PlayerDetector(object):
         xyxy_2 = list(player2.boxes.xyxy.cpu().numpy()[0])
         xyxy_1 = [int(i) for i in xyxy_1]
         xyxy_2 = [int(i) for i in xyxy_2]
-        result = [xyxy_1, xyxy_2] if class_id == 1 else [xyxy_2, xyxy_1]
-        return result  # [A, B] (far person, close person)
+        if center_point:
+            center_1 = [round((xyxy_1[0] + xyxy_1[2]) / 2), round((xyxy_1[1] + xyxy_1[3]) / 2)]
+            center_2 = [round((xyxy_2[0] + xyxy_2[2]) / 2), round((xyxy_2[1] + xyxy_2[3]) / 2)]
+            result = [center_1, center_2] if class_id == 1 else [center_2, center_1]
+            return result  # [A, B] (far person, close person)
+        else:
+
+            result = [xyxy_1, xyxy_2] if class_id == 1 else [xyxy_2, xyxy_1]
+            return result  # [A, B] (far person, close person)
 
     def get_AB_player_image(self):  # return cv images
         xyxy_A, xyxy_B = self.get_AB_player_position()
@@ -155,7 +161,7 @@ def mapping(src_coords, transform):
 
 if __name__ == "__main__":
     test_img = r'D:\AICUP\datasets\gt_frames\video_0000_frame_000038.png'
-    player = '../../trained_weights/yolov8s_players_detection_2.pt'
+    player = '../../trained_weights/yolov8s-players_detection_2.pt'
     court = '../../trained_weights/yolov8s-seg_court_detection.pt'
     net = '../../trained_weights/yolov8s-seg_net_detection.pt'
 

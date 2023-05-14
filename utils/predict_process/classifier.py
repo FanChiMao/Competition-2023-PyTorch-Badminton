@@ -6,13 +6,15 @@ from ultralytics import YOLO
 import cv2
 
 class YoloClassifier(object):    # Round Head    # Back Hand
-    def __init__(self, RH_weight=None, BH_weight=None, balltype_weight=None):
+    def __init__(self, RH_weight=None, BH_weight=None, balltype_weight=None, start=None, after=None):
         self.input_data = None
         self.device = 'cpu'
-        self.weights = [RH_weight, BH_weight, balltype_weight]
+        self.weights = [RH_weight, BH_weight, balltype_weight, start, after]
         self.rh_classifier = None
         self.bh_classifier = None
         self.ball_types_classifier = None
+        self.begin_ball_types_classifier = None
+        self.after_ball_types_classifier = None
 
     def set_image(self, cv_image=None, device='cpu'):
         self.input_data = cv_image
@@ -20,6 +22,8 @@ class YoloClassifier(object):    # Round Head    # Back Hand
         self.rh_classifier = RoundHeadClassifier(cv_image, self.weights[0], self.device)
         self.bh_classifier = BackHandClassifier(cv_image, self.weights[1], self.device)
         self.ball_types_classifier = BallTypesClassifier(cv_image, self.weights[2], self.device)
+        self.begin_ball_types_classifier = BallTypesClassifier(cv_image, self.weights[3], self.device)
+        self.after_ball_types_classifier = BallTypesClassifier(cv_image, self.weights[4], self.device)
 
     def set_device(self, device):
         self.device = device
@@ -32,9 +36,13 @@ class YoloClassifier(object):    # Round Head    # Back Hand
         result_BH = self.bh_classifier.get_back_hand_result()
         return result_BH
 
-    def get_ball_type(self):
-        ball_type = self.ball_types_classifier.get_ball_types_result()
-        return ball_type
+    def get_ball_type(self, separate=False, start=False):
+        if separate and start:
+            return self.begin_ball_types_classifier.get_ball_types_result()
+        elif separate and not start:
+            return self.after_ball_types_classifier.get_ball_types_result()
+
+        return self.ball_types_classifier.get_ball_types_result()
 
 
 class RoundHeadClassifier(object):
