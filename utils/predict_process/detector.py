@@ -62,7 +62,6 @@ class PlayerDetector(object):
             result = [center_1, center_2] if class_id == 1 else [center_2, center_1]
             return result  # [A, B] (far person, close person)
         else:
-
             result = [xyxy_1, xyxy_2] if class_id == 1 else [xyxy_2, xyxy_1]
             return result  # [A, B] (far person, close person)
 

@@ -65,16 +65,15 @@ class BadmintonAI(object):
 
         for ShotSeq, cv_image in enumerate(tqdm(cv_image_list)):
             self.detector.set_image(cv_image, 'cpu')
+            xy_A, xy_B = self.detector.player_detector.get_AB_player_position(center_point=True)
+            if xy_A is None or xy_B is None: continue
 
             xy_ball = ball_location[ShotSeq]
-            xy_A, xy_B = self.detector.player_detector.get_AB_player_position(center_point=True)
             dist_A, dist_B = self._get_distance(xy_A, xy_ball), self._get_distance(xy_B, xy_ball)
 
             hitter = 'A' if dist_A < dist_B else 'B'
             hitter_image = self.detector.get_hitter_image(hitter)
 
-
-            # TODO: classify roundhead and backhand
             self.classifier.set_image(hitter_image, 'cpu')
             RH_class = self.classifier.get_RH()
             BH_class = self.classifier.get_BH()
