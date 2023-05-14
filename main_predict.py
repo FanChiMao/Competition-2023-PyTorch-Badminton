@@ -62,7 +62,8 @@ class BadmintonAI(object):
 
     def predict_each_image(self, video_name, frame_indexes, cv_image_list, ball_location):
         print(f"==> Predict {len(cv_image_list)} frame from video_{video_name}")
-
+        previous_hitter = ''
+        real_ShotSeq = 1
         for ShotSeq, cv_image in enumerate(tqdm(cv_image_list)):
             self.detector.set_image(cv_image, 'cpu')
             xy_A, xy_B = self.detector.player_detector.get_AB_player_position(center_point=True)
@@ -70,8 +71,10 @@ class BadmintonAI(object):
 
             xy_ball = ball_location[ShotSeq]
             dist_A, dist_B = self._get_distance(xy_A, xy_ball), self._get_distance(xy_B, xy_ball)
-
             hitter = 'A' if dist_A < dist_B else 'B'
+            if ShotSeq != 0 and previous_hitter == hitter: continue
+            previous_hitter = hitter
+
             hitter_image = self.detector.get_hitter_image(hitter)
 
             self.classifier.set_image(hitter_image, 'cpu')
@@ -88,11 +91,11 @@ class BadmintonAI(object):
             DefenderLocationX = 640
             DefenderLocationY = 360
 
-            result = [video_name, str(ShotSeq + 1), frame_indexes[ShotSeq], hitter, RH_class, BH_class, ball_height,
+            result = [video_name, real_ShotSeq, frame_indexes[ShotSeq], hitter, RH_class, BH_class, ball_height,
                       xy_ball[0], xy_ball[1], HitterLocationX, HitterLocationY, DefenderLocationX, DefenderLocationY,
                       ball_type, winner]
-
             self.predict_result.append(result)
+            real_ShotSeq += 1
 
 
     def run_inference(self):
