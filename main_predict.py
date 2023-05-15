@@ -75,7 +75,13 @@ class BadmintonAI(object):
             if ShotSeq != 0 and previous_hitter == hitter: continue
             previous_hitter = hitter
 
-            hitter_image = self.detector.get_hitter_image(hitter)
+            hitter_image, defender_image = self.detector.get_hitter_defender_image(hitter)
+            os.makedirs(self.path_config['OPENPOSE'], exist_ok=True)
+            video_stem = video_name[:-4]
+            cv2.imwrite(os.path.join(self.path_config['OPENPOSE'],
+                                     f'{video_stem}_frame_{frame_indexes[ShotSeq]}_hitter.png'), hitter_image)
+            cv2.imwrite(os.path.join(self.path_config['OPENPOSE'], 
+                                     f'{video_stem}_frame_{frame_indexes[ShotSeq]}_defender.png'), defender_image)
 
             self.classifier.set_image(hitter_image, 'cpu')
             RH_class = self.classifier.get_RH()

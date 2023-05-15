@@ -187,9 +187,9 @@ if __name__ == '__main__':
     denoise_path = os.path.join(args.tracknet_output_path + '_denoise')
     os.makedirs(denoise_path, exist_ok=True)
 
-    # print("==> denoise TrackNet prediction")
-    # for i, file in enumerate(tqdm(tracknet_files)):e
-    #     smooth(file, denoise_path)
+    print("==> denoise TrackNet prediction")
+    for i, file in enumerate(tqdm(tracknet_files)):
+        smooth(file, denoise_path)
 
                                        # denoise_path
     csv_files = glob(os.path.join(args.tracknet_output_path, '*.csv'))

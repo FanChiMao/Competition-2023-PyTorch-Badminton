@@ -3,6 +3,7 @@ PATH:
   VIDEO: D:\AICUP\datasets\test\video
   HIT_CSV: D:\AICUP\datasets\test\predict_csv
   RESULT: .\predict_result
+  OPENPOSE: .\for_openpose
 
 # Pretrained weights path
 WEIGHTS:

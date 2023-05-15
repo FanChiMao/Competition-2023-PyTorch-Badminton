@@ -24,12 +24,12 @@ class YoloDetector(object):
     def set_device(self, device):
         self.device = device
 
-    def get_hitter_image(self, player):
+    def get_hitter_defender_image(self, player):
         A, B = self.player_detector.get_AB_player_image()
         if player == 'A':
-            return A
+            return [A, B]
         elif player == 'B':
-            return B
+            return [B, A]
 
     def save_output_images(self):
         cv2.imwrite("./result.png", self.input_data)
