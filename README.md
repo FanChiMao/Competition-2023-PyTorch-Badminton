@@ -1,6 +1,6 @@
 # Competition-2023-Pytorch-Badminton
 
-## TEAM_2970: 
+## TEAM_2970: [Jonathan](https://github.com/FanChiMao), Joe, Dodo, Harry, Edward  
 
 - [**[AICUP 2023] Shuttlecock Recognization**](https://aidea-web.tw/topic/cbea66cc-a993-4be8-933d-1aa9779001f8)  
 
