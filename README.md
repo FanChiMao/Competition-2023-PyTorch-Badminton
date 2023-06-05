@@ -59,5 +59,5 @@
 
 ## Contact us  
 - Chi-Mao Fan: qaz5517359@gmail.com  
-- Hong-Ru Shen: ms024929548@gmail.com
+- Hong-Ru Shen: ms024929548@gmail.com  
 `TODO`
