@@ -1,0 +1,3 @@
+[submodule "Ball-Type-Recognition"]
+	path = Ball-Type-Recognition
+	url = https://github.com/SHRHarry/Ball-Type-Recognition.git
