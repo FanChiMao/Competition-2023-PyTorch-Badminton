@@ -1,4 +1,4 @@
-# Competition-2023-Pytorch-Badminton
+# [AICUP 2023] Competition-2023-Pytorch-Badminton
 
 ## TEAM_2970: [Jonathan](https://github.com/FanChiMao), Joe, Dodo, Edward, [Harry](https://github.com/SHRHarry)  
 
