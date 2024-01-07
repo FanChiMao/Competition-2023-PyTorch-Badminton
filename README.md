@@ -1,5 +1,11 @@
 # [AICUP 2023] Competition-2023-Pytorch-Badminton
 
+## 🎉 This work has earned a place in the top 25% of winners!
+<details>  
+<summary><b>Award winners list (Click to expand)</b></summary>  
+  <a href="https://imgur.com/2c6vBlz"><img src="https://i.imgur.com/X8rmeDg.png" title="source: imgur.com" /></a>
+</details>
+
 ## TEAM_2970: [Jonathan](https://github.com/FanChiMao), Joe, Dodo, Edward, [Harry](https://github.com/SHRHarry)  
 
 - [**[AICUP 2023] Shuttlecock Recognization**](https://aidea-web.tw/topic/cbea66cc-a993-4be8-933d-1aa9779001f8)  
