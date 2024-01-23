@@ -3,7 +3,7 @@ pandas
 PyMySQL
 opencv-python
 imutils
-Pillow
+Pillow>=10.2.0
 piexif
 scikit-learn
 h5py==2.10.0
